@@ -33,7 +33,6 @@ def is_done(vimgolf_user):
     return url_set
 
 def dig_date(some_html):
-    print("dig_date")
     notice_divs = soup.find_all("div", {"class": "notice clearfix"})
     winner = notice_divs[0]
     date_em = winner.find_all("em")
@@ -43,7 +42,6 @@ def dig_date(some_html):
     return date_parts[0]
 
 def dig_winner(winner):
-    print("dig_winer")
     anchors = winner.find_all("a")
     user = anchors[1].text
     return user
@@ -91,7 +89,6 @@ def dig_entries(some_html):
         print(b)
     print(stats[0])
     print(stats[1])
-    print("___|__?")
     golfers = stats[0].text
     entries = stats[1].text
     print(entries)
@@ -131,11 +128,8 @@ try:
         creator = dig_creator(soup)
         title = href_dict[h]
         min_keys = dig_min(soup)
-        print("mn")
         max_keys = dig_max(soup)
-        print("k")
         ch_date = dig_date(winner)
-        print("o")
         count = count + 1
 
         sql = "insert into vg_challenges values (:h, :entries, :create_date, :winner, :min_keys, :max_keys, :creator, :title)"
