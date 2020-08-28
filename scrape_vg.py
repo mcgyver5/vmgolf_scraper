@@ -20,15 +20,15 @@ def is_done(vimgolf_user):
     # returns a list of challenge IDs that vimgolf_user has participated in
     url = "https://vimgolf.com/{}".format(vimgolf_user)
     response = requests.get(url)
-    soup = BeautifulSoup.parse(response.content,"html.parser")
+    soup = BeautifulSoup(response.content,"html.parser")
     h5s = soup.find_all("h5", {"class": "challenge"})
-    url_set = {}
+    url_set = []
     for h5 in h5s:
         anchor = h5.find("a")
         url_address = anchor['href']
 
         hash12 = url_address[12:]
-        url_set.add(hash12)
+        url_set.append(hash12)
 
     return url_set
 
@@ -95,6 +95,10 @@ def dig_entries(some_html):
     return entries
 
 start_url = "https://www.vimgolf.com"
+finished_challs = is_done("mcguire")
+
+for f in finished_challs:
+    print(f)
 req_headers = get_headers()
 
 response = requests.get(start_url, headers=req_headers)
