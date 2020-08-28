@@ -62,7 +62,7 @@ def dig_min(soup):
     score_tag = winner.find("b")
     return score_tag.text
     
- def dig_max(some_html):
+def dig_max(some_html):
     print("dig_max")
     success_divs = soup.find_all("div", {"class":"success clearfix"})
     nonwinner = success_divs[-1]
@@ -124,7 +124,7 @@ try:
         soup = BeautifulSoup(resp.content, 'html.parser')
 
         notice_divs = soup.find_all("div", {"class": "notice clearfix"})
-                winner = notice_divs[0]
+        winner = notice_divs[0]
 
         entries = dig_entries(soup)
         winner = dig_winner(winner)
