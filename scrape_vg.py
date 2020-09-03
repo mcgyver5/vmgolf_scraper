@@ -11,7 +11,7 @@
 # + allow me to see the challenges I have tried but haven't finished
 # option to filter out those who have used <C-LEFT> or LEFT or <S-LEFT> in their answers.
 import sqlite3
-
+from datetime import datetime
 import requests
 import time
 from bs4 import BeautifulSoup
@@ -35,13 +35,18 @@ def is_done(vimgolf_user):
 def dig_date(soup_bone):
     notice_divs = soup_bone.find_all("div", {"class": "notice clearfix"})
     winner = notice_divs[0]
-    date_em = winner.find_all("em")
-    challenge_date = date_em[0].text
-    date_parts = challenge_date.split(" ")
-    date_string = date_parts[0]
-    parts = date_string.split("/")
-    form_date = parts[2] + "-" + parts[0] + "-" + parts[1]
-    return form_date
+    earliest_date = datetime.today()
+    for div in notice_divs:
+        date_em = div.find_all("em")
+        challenge_date = date_em[0].text
+        date_parts = challenge_date.split(" ")
+        date_string = date_parts[0]
+        parts = date_string.split("/")
+        form_date = parts[2] + "-" + parts[0] + "-" + parts[1]
+        p_date_obj = datetime.strptime(form_date, '%Y-%m-%d')
+        if p_date_obj < earliest_date:
+            earliest_date = p_date_obj
+    return datetime.strftime(earliest_date, '%Y-%m-%d')
 
 def dig_winner(winner):
     anchors = winner.find_all("a")
@@ -83,10 +88,12 @@ def get_headers():
             'accept-language': 'en-US,en;q=0.9'
     }
     return headers
-def dig_entries(some_html):
+def dig_entries(soup):
     stats = soup.findAll("b", {"class": "stat"})
+    print(stats)
     golfers = stats[0].text
     entries = stats[1].text
+    print(entries)
     return entries
 
 def get_href_dict(soup):
@@ -121,7 +128,10 @@ def capture_challenges(soup):
         c = conn.cursor()
         href_dict = get_href_dict(soup)
         done = 0
+        count2 = 0
         for h in href_dict:
+            if count2 > 12:
+                break
             full_url = "https://www.vimgolf.com/challenges/" + h
             resp = requests.get(full_url, headers=req_headers)
             time.sleep(0.05)
@@ -131,7 +141,9 @@ def capture_challenges(soup):
                 done = 1
             notice_divs = soup1.find_all("div", {"class": "notice clearfix"})
             winner = notice_divs[0]
+            print(full_url)
             entries = dig_entries(soup1)
+
             winner = dig_winner(winner)
             creator = dig_creator(soup1)
             title = href_dict[h]
@@ -143,6 +155,7 @@ def capture_challenges(soup):
             c.execute(sql, {'h':h, 'entries':entries, 'create_date':ch_date,'winner':winner,'min_keys':min_keys, 'max_keys':max_keys, 'creator':creator, 'title':title, 'done':done})
             conn.commit()
             done = 0
+            count2 = count2 + 1
         c.close()
         conn.close()
     except Exception as e:
@@ -166,5 +179,5 @@ for page_url in all_pages:
     response = requests.get(page_url, headers=req_headers)
     soup = BeautifulSoup(response.content, 'html.parser') 
     capture_challenges(soup)
-    if count > 2:
+    if count > 1:
         break
